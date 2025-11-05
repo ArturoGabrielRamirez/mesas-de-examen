@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users collection - permissive for development, use custom claims in production
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && (
+        request.auth.uid == userId || 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ["admin", "preceptor"]
+      );
+      allow create: if request.auth != null;
+    }
+
+    // Exam tables - all authenticated can read, teachers/admins/preceptors can write
+    match /exam_tables/{document=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // Subjects - all authenticated can read, teachers/admins/preceptors can write
+    match /subjects/{document=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // Reservations - all authenticated can read/write
+    match /reservations/{document=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // Grades - all authenticated can read/write
+    match /grades/{document=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // Attendance - all authenticated can read/write
+    match /attendance/{document=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // Deny all other access
+    match /{document=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+  }
+}
