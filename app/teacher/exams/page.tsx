@@ -8,12 +8,19 @@ import type { ExamTable } from "@/types"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, MapPin, Users } from "lucide-react"
+import CreateExamModal from "@/components/create-exam-modal"
+import { Pencil } from "lucide-react"
+import { EditExamModal } from "@/components/edit-exam-modal" // (el que pegaste antes)
+
 
 export default function TeacherExamsPage() {
   const router = useRouter()
   const [exams, setExams] = useState<ExamTable[]>([])
   const [subjects, setSubjects] = useState<Map<string, string>>(new Map())
   const [isLoading, setIsLoading] = useState(true)
+  const [openCreate, setOpenCreate] = useState(false)
+  const [editingExam, setEditingExam] = useState<ExamTable | null>(null)
+
 
   const loadExams = useCallback(async () => {
     try {
@@ -27,10 +34,10 @@ export default function TeacherExamsPage() {
       // Cargar nombres de materias
       const subjectMap = new Map<string, string>()
       for (const exam of data) {
-        if (exam.subjectId && !subjectMap.has(exam.subjectId)) {
-          const subject = await examService.getSubjectById(exam.subjectId)
+        if (exam.subjectName && !subjectMap.has(exam.subjectName)) {
+          const subject = await examService.getSubjectById(exam.subjectName)
           if (subject) {
-            subjectMap.set(exam.subjectId, subject.name)
+            subjectMap.set(exam.subjectName, subject.name)
           }
         }
       }
@@ -73,6 +80,12 @@ export default function TeacherExamsPage() {
       </div>
 
       <div className="bg-white rounded-lg shadow-lg p-8 border-2 border-primary/10">
+        <div className="flex justify-end">
+          <Button onClick={() => setOpenCreate(true)} className="mb-4">
+            Crear Mesa de Examen
+          </Button>
+        </div>
+
         {exams.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-foreground/60">No tienes mesas asignadas</p>
@@ -92,7 +105,7 @@ export default function TeacherExamsPage() {
               </thead>
               <tbody>
                 {exams.map((exam) => {
-                  const subjectName = subjects.get(exam.subjectId) || exam.subjectName || exam.subjectId
+                  const subjectName = subjects.get(exam.subjectName)
 
                   return (
                     <tr key={exam.id} className="border-b border-border hover:bg-accent/50">
@@ -116,11 +129,16 @@ export default function TeacherExamsPage() {
                         </div>
                       </td>
                       <td className="py-3 px-4 text-center">{getStatusBadge(exam.status)}</td>
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-3 px-4 text-center flex justify-center gap-2">
                         <Button size="sm" variant="outline" onClick={() => handleViewExam(exam.id)}>
                           Ver
                         </Button>
+
+                        <Button size="sm" variant="outline" onClick={() => setEditingExam(exam)}>
+                          <Pencil className="w-4 h-4" />
+                        </Button>
                       </td>
+
                     </tr>
                   )
                 })}
@@ -133,7 +151,7 @@ export default function TeacherExamsPage() {
       {/* Vista de tarjetas para móvil */}
       <div className="lg:hidden space-y-4">
         {exams.map((exam) => {
-          const subjectName = subjects.get(exam.subjectId) || exam.subjectName || exam.subjectId
+          const subjectName = subjects.get(exam.subjectName)
 
           return (
             <div key={exam.id} className="bg-white rounded-lg shadow-lg p-6 border-2 border-primary/10">
@@ -166,6 +184,27 @@ export default function TeacherExamsPage() {
           )
         })}
       </div>
+      {editingExam && (
+        <EditExamModal
+          exam={editingExam}
+          onClose={() => setEditingExam(null)}
+          onSuccess={() => {
+            setEditingExam(null)
+            loadExams() // recargar la lista después de editar
+          }}
+        />
+      )}
+
+      <CreateExamModal
+        open={openCreate}
+        onClose={() => setOpenCreate(false)}
+        onCreated={() => {
+          setOpenCreate(false)
+          loadExams()
+        }}
+      />
+
+
     </div>
   )
 }

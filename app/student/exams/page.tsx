@@ -22,23 +22,28 @@ export default function StudentExamsPage() {
   const loadExams = async () => {
     if (!user?.uid) return
     try {
-      const availableExams = await examService.getAvailableExams(user.course)
-      setExams(availableExams)
+      const data = await examService.getAllExams()
+
+      // Aseguramos que date siempre sea Date
+      const normalized = data.map((exam) => ({
+        ...exam,
+        date: exam.date instanceof Date ? exam.date : new Date(exam.date),
+      }))
+
+      setExams(normalized)
     } finally {
       setLoading(false)
     }
   }
 
+
+
   const loadReservations = async () => {
     if (!user?.uid) return
     const myReservationIds = await examService.getStudentReservationIds(user.uid)
-    setReserved(
-      myReservationIds.map((resId) => {
-        const parts = resId.split("_")
-        return parts[1]
-      }),
-    )
+    setReserved(myReservationIds) // ya es solo examId ahora
   }
+
 
   const handleReserve = async (examId: string) => {
     setActionLoading(examId)

@@ -7,12 +7,21 @@ import type { ExamTable, User } from "@/types"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import { useRouter } from "next/navigation"
+import CreateExamModal from "@/components/create-exam-modal"
+import { Pencil } from "lucide-react"
+import { EditExamModal } from "@/components/edit-exam-modal" // (el que pegaste antes)
+
+
 
 export default function AdminExamsPage() {
   const [exams, setExams] = useState<ExamTable[]>([])
   const [teachers, setTeachers] = useState<Map<string, User>>(new Map())
   const [subjects, setSubjects] = useState<Map<string, string>>(new Map())
   const [isLoading, setIsLoading] = useState(true)
+  const [openCreate, setOpenCreate] = useState(false)
+  const [editingExam, setEditingExam] = useState<ExamTable | null>(null)
+
+
   const router = useRouter()
 
   const loadExams = useCallback(async () => {
@@ -35,10 +44,10 @@ export default function AdminExamsPage() {
       // Load subject names
       const subjectMap = new Map<string, string>()
       for (const exam of data) {
-        if (exam.subjectId && !subjectMap.has(exam.subjectId)) {
-          const subject = await examService.getSubjectById(exam.subjectId)
+        if (exam.subjectName && !subjectMap.has(exam.subjectName)) {
+          const subject = await examService.getSubjectById(exam.subjectName)
           if (subject) {
-            subjectMap.set(exam.subjectId, subject.name)
+            subjectMap.set(exam.subjectName, subject.name)
           }
         }
       }
@@ -69,7 +78,7 @@ export default function AdminExamsPage() {
           <h1 className="text-4xl font-bold text-primary-dark mb-2">Mesas de Examen</h1>
           <p className="text-foreground/60">Gestiona todas las mesas del colegio</p>
         </div>
-        <Button className="bg-primary hover:bg-primary-dark flex items-center gap-2">
+        <Button onClick={() => setOpenCreate(true)} className="bg-primary hover:bg-primary-dark flex items-center gap-2">
           <Plus className="w-4 h-4" />
           Nueva Mesa
         </Button>
@@ -97,7 +106,7 @@ export default function AdminExamsPage() {
                 {exams.map((exam) => {
                   const teacher = teachers.get(exam.teacherId)
                   const teacherName = teacher ? `${teacher.name} ${teacher.surname}` : exam.teacherId
-                  const subjectName = subjects.get(exam.subjectId) || exam.subjectId
+                  const subjectName = subjects.get(exam.subjectName)
 
                   return (
                     <tr key={exam.id} className="border-b border-border hover:bg-accent/50">
@@ -106,11 +115,16 @@ export default function AdminExamsPage() {
                       <td className="py-3 px-4">{exam.date.toLocaleDateString("es-AR")}</td>
                       <td className="py-3 px-4">{exam.startTime}</td>
                       <td className="py-3 px-4">{exam.room}</td>
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-3 px-4 flex justify-center gap-2">
                         <Button size="sm" variant="outline" onClick={() => handleViewExam(exam.id)}>
                           Ver
                         </Button>
+
+                        <Button size="sm" variant="outline" onClick={() => setEditingExam(exam)}>
+                          <Pencil className="w-4 h-4" />
+                        </Button>
                       </td>
+
                     </tr>
                   )
                 })}
@@ -119,6 +133,27 @@ export default function AdminExamsPage() {
           </div>
         )}
       </div>
+
+      {editingExam && (
+        <EditExamModal
+          exam={editingExam}
+          onClose={() => setEditingExam(null)}
+          onSuccess={() => {
+            setEditingExam(null)
+            loadExams() // recargar la lista después de editar
+          }}
+        />
+      )}
+
+      <CreateExamModal
+        open={openCreate}
+        onClose={() => setOpenCreate(false)}
+        onCreated={() => {
+          setOpenCreate(false)
+          loadExams()
+        }}
+      />
     </div>
+
   )
 }

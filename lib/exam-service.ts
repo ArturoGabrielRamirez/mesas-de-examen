@@ -27,18 +27,18 @@ export class ExamService {
     const data = doc.data()
     return {
       id: doc.id,
-      subjectId: (data.subjectId as string) || "",
-      subjectName: (data.subjectName as string) || "",
-      teacherId: (data.teacherId as string) || "",
+      subjectName: data.subjectName || "",
+      teacherId: data.teacherId || "",
+      teacherName: data.teacherName || "",
       date: data.date instanceof Timestamp ? data.date.toDate() : new Date(),
-      startTime: (data.startTime as string) || "",
-      endTime: (data.endTime as string) || "",
-      room: (data.room as string) || "",
-      status: (data.status as string) || "scheduled",
-      maxStudents: (data.maxStudents as number) || 30,
+      startTime: data.startTime || "",
+      endTime: data.endTime || "",
+      room: data.room || "",
+      status: data.status || "scheduled",
+      maxStudents: data.maxStudents || 30,
       createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(),
       updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate() : new Date(),
-    } as ExamTable
+    }
   }
 
   private getExamStatus(exam: ExamTable): "scheduled" | "in_progress" | "completed" | "cancelled" {
@@ -657,6 +657,24 @@ export class ExamService {
       return null
     }
   }
+
+  async getAllSubjects(): Promise<{ id: string; name: string }[]> {
+    try {
+      const snapshot = await getDocs(collection(this.db, "subjects"))
+      return snapshot.docs.map((doc) => {
+        const data = doc.data()
+        return {
+          id: doc.id,
+          name: (data.name as string) || "Sin nombre",
+        }
+      })
+    } catch (err) {
+      console.error("[v0] Error loading subjects:", err)
+      toast.error("Error al cargar materias")
+      return []
+    }
+  }
+
 }
 
 export const examService = new ExamService()

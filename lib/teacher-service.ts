@@ -26,19 +26,20 @@ export class TeacherService {
     const data = doc.data()
     return {
       id: doc.id,
-      subjectId: (data.subjectId as string) || "",
-      subjectName: (data.subjectName as string) || "", // Added subjectName field
-      teacherId: (data.teacherId as string) || "",
+      subjectName: data.subjectName || "",
+      teacherId: data.teacherId || "",
+      teacherName: data.teacherName || "",
       date: data.date instanceof Timestamp ? data.date.toDate() : new Date(),
-      startTime: (data.startTime as string) || "",
-      endTime: (data.endTime as string) || "", // Added endTime field
-      room: (data.room as string) || "",
-      status: (data.status as string) || "scheduled",
-      maxStudents: (data.maxStudents as number) || 30,
+      startTime: data.startTime || "",
+      endTime: data.endTime || "",
+      room: data.room || "",
+      status: data.status || "scheduled",
+      maxStudents: data.maxStudents || 30,
       createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(),
       updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate() : new Date(),
-    } as ExamTable
+    }
   }
+
 
   async createExamTable(data: Omit<ExamTable, "id" | "createdAt" | "updatedAt">, teacherId: string): Promise<string> {
     try {
@@ -183,7 +184,6 @@ export class TeacherService {
         updatedAt: Timestamp.now(),
       }
 
-      if (data.subjectId) updateData.subjectId = data.subjectId
       if (data.subjectName) updateData.subjectName = data.subjectName
       if (data.startTime) updateData.startTime = data.startTime
       if (data.endTime) updateData.endTime = data.endTime // Added endTime update

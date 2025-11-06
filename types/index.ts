@@ -27,20 +27,22 @@ export interface Subject {
   createdAt: Date
 }
 
-export interface ExamTable {
+export type ExamTable = {
   id: string
-  subjectId: string
-  subjectName?: string
+  subjectName: string // ✅ ahora la materia es texto libre
   teacherId: string
+  teacherName: string // ✅ importante para actas y pdf
   date: Date
   startTime: string
   endTime: string
   room: string
-  maxStudents: number
   status: "scheduled" | "in_progress" | "completed" | "cancelled"
+  maxStudents: number
   createdAt: Date
   updatedAt: Date
 }
+
+
 
 export interface Reservation {
   id: string
@@ -107,4 +109,10 @@ export interface SignupData {
   course: string
   password: string
   confirmPassword: string
+}
+
+export type AppUser = {
+  id: string
+  displayName: string
+  role: "teacher" | "admin" | "preceptor"
 }

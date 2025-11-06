@@ -78,7 +78,7 @@ export class PDFService {
     doc.setTextColor(0, 0, 0)
 
     const examData = [
-      ["Materia:", exam.subjectName || exam.subjectId || "Materia"],
+      ["Materia:", exam.subjectName],
       ["Fecha:", new Date(exam.date).toLocaleDateString("es-AR")],
       ["Hora:", `${exam.startTime} - ${exam.endTime}`],
       ["Aula:", `${exam.room}`],
@@ -137,7 +137,7 @@ export class PDFService {
     doc.setTextColor(0, 0, 0)
 
     const examInfo = [
-      `Materia: ${exam.subjectName || exam.subjectId || "Materia"} | Fecha: ${new Date(exam.date).toLocaleDateString("es-AR")} | Hora: ${exam.startTime}`,
+      `Materia: ${exam.subjectName} | Fecha: ${new Date(exam.date).toLocaleDateString("es-AR")} | Hora: ${exam.startTime}`,
       `Profesor: ${teacher.name} ${teacher.surname} | Aula: ${exam.room}`,
     ]
 
